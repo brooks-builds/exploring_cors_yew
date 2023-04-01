@@ -1,3 +1,4 @@
+use gloo::net::http::RequestCredentials;
 use yew::{function_component, html, Html};
 use yew_hooks::use_effect_once;
 
@@ -23,21 +24,18 @@ fn app_component() -> Html {
 }
 
 async fn make_the_call() {
-    let response = gloo::net::http::Request::get("https://httpbin.org/response-headers")
-        .query([
-            ("freeform", "I_set_this"),
-            ("Access-Control-Expose-Headers", "*"),
-            (
-                "Authorization",
-                "Bearer q39280jrhiesnthyuwfljguywflpjgyuwlfjuielaf.q3;94857jfruisenhdriefsnea",
-            ),
-            ("access-control-allow-credentials", "false"),
-        ])
+    let response = gloo::net::http::Request::get("http://localhost:3000")
+        .mode(gloo::net::http::RequestMode::Cors)
+        .credentials(RequestCredentials::Include)
         .send()
         .await
         .expect("Error sending request");
 
     for (key, value) in response.headers().entries() {
-        gloo::console::log!(key, value);
+        gloo::console::log!(key);
     }
+
+    let body = response.text().await.unwrap();
+
+    gloo::console::log!("body:", body);
 }
